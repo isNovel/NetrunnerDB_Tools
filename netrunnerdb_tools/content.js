@@ -30,17 +30,28 @@ function insertEmptyFilterRow() {
     // --- 1. 定義 HTML 結構 ---
     // 這裡使用模板字串來定義新的 HTML 結構
     const newSearchButtonsHTML = `
-        <div class="row search-buttons">
-        <div class="col-sm-6" style="margin-bottom:10px">
-            <div id="faction_code" class="filter btn-group btn-group-justified" data-toggle="buttons"></div>
-        </div>
-        <div class="col-sm-6" style="margin-bottom:10px">
-            <div id="type_code" class="filter btn-group btn-group-justified" data-toggle="buttons"></div>
-        </div>
-        <div class="col-sm-6" style="margin-bottom:10px">
-            <div id="my_code" class="newfilter btn-group btn-group-justified" data-toggle="buttons"></div>
-        </div>
+       <div class="row search-buttons">
+    <div class="col-sm-6" style="margin-bottom:10px">
+        <div id="faction_code" class="filter btn-group btn-group-justified" data-toggle="buttons"></div>
     </div>
+    <div class="col-sm-6" style="margin-bottom:10px">
+        <div id="type_code" class="filter btn-group btn-group-justified" data-toggle="buttons"></div>
+    </div>
+
+    <div class="col-sm-12" style="margin-bottom:10px; display: flex; align-items: center;">
+        <div style="width: 80px; flex-shrink: 0; font-weight: bold; color: #666; font-size: 12px;">
+            自訂 (OR)
+        </div>
+        <div id="my_code_or" class="newfilter btn-group btn-group-justified" data-toggle="buttons" style="flex-grow: 1;"></div>
+    </div>
+
+    <div class="col-sm-12" style="margin-bottom:10px; display: flex; align-items: center;">
+        <div style="width: 80px; flex-shrink: 0; font-weight: bold; color: #666; font-size: 12px;">
+            自訂 (AND)
+        </div>
+        <div id="my_code_and" class="newfilter btn-group btn-group-justified" data-toggle="buttons" style="flex-grow: 1;"></div>
+    </div>
+</div>
     `;
     const tempContainer = document.createElement('div');
     tempContainer.innerHTML = newSearchButtonsHTML;
@@ -61,8 +72,8 @@ function insertEmptyFilterRow() {
 
 const LABEL_MAP = {
     indeck: 'Quantity', title: 'Name', cost: 'Cost',
-    memory_cost: 'Memory Cost', trash_cost: 'Trash Cost',
-    strength: 'Strength', faction_cost: 'I.',
+    memory_cost: 'Mem.', trash_cost: 'Trash',
+    strength: 'Str.', faction_cost: 'I.',
     type_code: 'T.', faction_code: 'F.'
 };
 
@@ -187,26 +198,35 @@ window.addEventListener("message", function listener(event) {
         window.sessionIdentityType = identityType; // 保存session級別的identity類型
         console.log('[Content.js] 成功從 inject.js 接收到數據:', identityType);
 
-        // 3. 呼叫您的 modifycollection 函式，並傳入數據
-        modifycollection(identityType);
         if (identityType === 'runner') {
             window.postMessage({
                 type: "NRDB_CUSTOM_FILTER_READY",
                 name: "Decoder",
-                value: "s:Decoder"
-            }, "*"); window.postMessage({
+                value: "s:Decoder",
+                value2: 'and'
+
+            }, "*");
+
+            window.postMessage({
                 type: "NRDB_CUSTOM_FILTER_READY",
                 name: "Killer",
-                value: "s:Killer"
-            }, "*"); window.postMessage({
+                value: "s:Killer",
+                value2: 'and'
+            }, "*");
+
+            window.postMessage({
                 type: "NRDB_CUSTOM_FILTER_READY",
                 name: "Fracter",
-                value: "s:Fracter"
+                value: "s:Fracter",
+                value2: 'or'
             }, "*");
+
             window.postMessage({
                 type: "NRDB_CUSTOM_FILTER_READY",
                 name: "AI",
-                value: "s:AI"
+                value: "s:AI",
+                value2: 'or'
+
             }, "*");
         } else {
 

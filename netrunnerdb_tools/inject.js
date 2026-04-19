@@ -137,7 +137,6 @@
                 var sideCode = Identity.side_code;
                 const currentOrder = columnOrder[sideCode];
                 let tmphtml = `<tr class="card-container" data-index="${record.code}">`;
-                console.log(currentOrder);
 
                 currentOrder.forEach(col => {
                     if (!col.visible) return;
@@ -571,130 +570,218 @@
             div = $(this).closest('.newfilter');
         }
         var columnName = div.attr('id');
-        console.log(columnName);
         if (columnName == 'pack_code') {
             update_collection_packs();
             return;
         }
-        if (columnName == 'my_code') {
+        if (columnName != 'my_code_and' && columnName != 'my_code_or') {
 
-            MyCustomQuery = [];
-
+            var arr = [];
             div.find("input[type=checkbox]").each(function (index, elt) {
-                var value = $(elt).attr('name');
-                if (value && $(elt).prop('checked')) {
-                    var myFilterQueryTMP = [];
+                var name = $(elt).attr('name');
 
-                    var conditions = filterSyntax(value);
-                    for (var i = 0; i < conditions.length; i++) {
-                        var condition = conditions[i];
-                        var type = condition.shift();
-                        var operator = condition.shift();
-                        var values = condition.map(v => {
-                            return v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // Escape regex special characters
-                        });
-                        switch (type) {
-                            case "":
-                            case "_":
-                                myFilterQueryTMP.push(add_string_sf('stripped_title', operator, values));
-                                break;
-                            case "x":
-                                myFilterQueryTMP.push(add_string_sf('text', operator, values));
-                                break;
-                            case "a":
-                                myFilterQueryTMP.push(add_string_sf('flavor', operator, values));
-                                break;
-                            case "e":
-                                myFilterQueryTMP.push(add_string_sf('pack_code', operator, values));
-                                break;
-                            case "t":
-                                myFilterQueryTMP.push(add_string_sf('type_code', operator, values));
-                                break;
-                            case "s":
-                                myFilterQueryTMP.push(add_string_sf('keywords', operator, values));
-                                break;
-                            case "i":
-                                myFilterQueryTMP.push(add_string_sf('illustrator', operator, values));
-                                break;
-                            case "o":
-                                myFilterQueryTMP.push(add_integer_sf('cost', operator, values));
-                                break;
-                            case "g":
-                                myFilterQueryTMP.push(add_integer_sf('advancement_cost', operator, values));
-                                break;
-                            case "l":
-                                myFilterQueryTMP.push(add_integer_sf("base_link", operator, values));
-                                break;
-                            case "m":
-                                myFilterQueryTMP.push(add_integer_sf("memory_cost", operator, values));
-                                break;
-                            case "n":
-                                myFilterQueryTMP.push(add_integer_sf('faction_cost', operator, values));
-                                break;
-                            case "p":
-                                myFilterQueryTMP.push(add_integer_sf('strength', operator, values));
-                                break;
-                            case "v":
-                                myFilterQueryTMP.push(add_integer_sf('agenda_points', operator, values));
-                                break;
-                            case "h":
-                                myFilterQueryTMP.push(add_integer_sf('trash_cost', operator, values));
-                                break;
-                            case "u":
-                                myFilterQueryTMP.push(add_boolean_sf('uniqueness', operator, values));
-                                break;
-                            case "y":
-                                myFilterQueryTMP.push(add_integer_sf('quantity', operator, values));
-                                break;
-                        }
-                    }
-                    MyCustomQuery.push(...myFilterQueryTMP);
+                if (name && $(elt).prop('checked')) {
+                    arr.push(name);
                 }
             });
+            Filters[columnName] = arr;
             FilterQuery = get_filter_query(Filters);
-
-            if (MyCustomQuery.length > 0) {
-                var tmpFilterQuery = get_filter_query(Filters);
-                delete tmpFilterQuery['type_code'];
-                customCondition = { "$and": [tmpFilterQuery, { "$or": MyCustomQuery }] };
-                FilterQuery = { "$or": [FilterQuery, customCondition] };
-            }
-
-            refresh_collection();
-            return;
         }
 
-        var arr = [];
-        div.find("input[type=checkbox]").each(function (index, elt) {
-            var name = $(elt).attr('name');
+        var $andSection = $('#my_code_and');
+        var $orSection = $('#my_code_or');
+        MyCustomQueryAND = [];
+        $andSection.find("input[type=checkbox]").each(function (index, elt) {
+            var value = $(elt).attr('name'); console.log("value:", value);
 
-            if (name && $(elt).prop('checked')) {
-                arr.push(name);
+            if (value && $(elt).prop('checked')) {
+                var myFilterQueryTMP = [];
+
+                var conditions = filterSyntax(value);
+                for (var i = 0; i < conditions.length; i++) {
+                    var condition = conditions[i];
+                    var type = condition.shift();
+                    var operator = condition.shift();
+                    var values = condition.map(v => {
+                        return v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // Escape regex special characters
+                    });
+                    switch (type) {
+                        case "":
+                        case "_":
+                            myFilterQueryTMP.push(add_string_sf('stripped_title', operator, values));
+                            break;
+                        case "x":
+                            myFilterQueryTMP.push(add_string_sf('text', operator, values));
+                            break;
+                        case "a":
+                            myFilterQueryTMP.push(add_string_sf('flavor', operator, values));
+                            break;
+                        case "e":
+                            myFilterQueryTMP.push(add_string_sf('pack_code', operator, values));
+                            break;
+                        case "t":
+                            myFilterQueryTMP.push(add_string_sf('type_code', operator, values));
+                            break;
+                        case "s":
+                            myFilterQueryTMP.push(add_string_sf('keywords', operator, values));
+                            break;
+                        case "i":
+                            myFilterQueryTMP.push(add_string_sf('illustrator', operator, values));
+                            break;
+                        case "o":
+                            myFilterQueryTMP.push(add_integer_sf('cost', operator, values));
+                            break;
+                        case "g":
+                            myFilterQueryTMP.push(add_integer_sf('advancement_cost', operator, values));
+                            break;
+                        case "l":
+                            myFilterQueryTMP.push(add_integer_sf("base_link", operator, values));
+                            break;
+                        case "m":
+                            myFilterQueryTMP.push(add_integer_sf("memory_cost", operator, values));
+                            break;
+                        case "n":
+                            myFilterQueryTMP.push(add_integer_sf('faction_cost', operator, values));
+                            break;
+                        case "p":
+                            myFilterQueryTMP.push(add_integer_sf('strength', operator, values));
+                            break;
+                        case "v":
+                            myFilterQueryTMP.push(add_integer_sf('agenda_points', operator, values));
+                            break;
+                        case "h":
+                            myFilterQueryTMP.push(add_integer_sf('trash_cost', operator, values));
+                            break;
+                        case "u":
+                            myFilterQueryTMP.push(add_boolean_sf('uniqueness', operator, values));
+                            break;
+                        case "y":
+                            myFilterQueryTMP.push(add_integer_sf('quantity', operator, values));
+                            break;
+                    }
+                }
+
+                MyCustomQueryAND.push(...myFilterQueryTMP);
+
             }
         });
-        Filters[columnName] = arr;
-        FilterQuery = get_filter_query(Filters);
+        MyCustomQueryOR = [];
+        $orSection.find("input[type=checkbox]").each(function (index, elt) {
+            var value = $(elt).attr('name'); console.log("value:", value);
 
-        if (MyCustomQuery.length > 0) {
+            if (value && $(elt).prop('checked')) {
+                var myFilterQueryTMP = [];
+
+                var conditions = filterSyntax(value);
+                for (var i = 0; i < conditions.length; i++) {
+                    var condition = conditions[i];
+                    var type = condition.shift();
+                    var operator = condition.shift();
+                    var values = condition.map(v => {
+                        return v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // Escape regex special characters
+                    });
+                    switch (type) {
+                        case "":
+                        case "_":
+                            myFilterQueryTMP.push(add_string_sf('stripped_title', operator, values));
+                            break;
+                        case "x":
+                            myFilterQueryTMP.push(add_string_sf('text', operator, values));
+                            break;
+                        case "a":
+                            myFilterQueryTMP.push(add_string_sf('flavor', operator, values));
+                            break;
+                        case "e":
+                            myFilterQueryTMP.push(add_string_sf('pack_code', operator, values));
+                            break;
+                        case "t":
+                            myFilterQueryTMP.push(add_string_sf('type_code', operator, values));
+                            break;
+                        case "s":
+                            myFilterQueryTMP.push(add_string_sf('keywords', operator, values));
+                            break;
+                        case "i":
+                            myFilterQueryTMP.push(add_string_sf('illustrator', operator, values));
+                            break;
+                        case "o":
+                            myFilterQueryTMP.push(add_integer_sf('cost', operator, values));
+                            break;
+                        case "g":
+                            myFilterQueryTMP.push(add_integer_sf('advancement_cost', operator, values));
+                            break;
+                        case "l":
+                            myFilterQueryTMP.push(add_integer_sf("base_link", operator, values));
+                            break;
+                        case "m":
+                            myFilterQueryTMP.push(add_integer_sf("memory_cost", operator, values));
+                            break;
+                        case "n":
+                            myFilterQueryTMP.push(add_integer_sf('faction_cost', operator, values));
+                            break;
+                        case "p":
+                            myFilterQueryTMP.push(add_integer_sf('strength', operator, values));
+                            break;
+                        case "v":
+                            myFilterQueryTMP.push(add_integer_sf('agenda_points', operator, values));
+                            break;
+                        case "h":
+                            myFilterQueryTMP.push(add_integer_sf('trash_cost', operator, values));
+                            break;
+                        case "u":
+                            myFilterQueryTMP.push(add_boolean_sf('uniqueness', operator, values));
+                            break;
+                        case "y":
+                            myFilterQueryTMP.push(add_integer_sf('quantity', operator, values));
+                            break;
+                    }
+                }
+
+                MyCustomQueryOR.push(...myFilterQueryTMP);
+            }
+        });
+
+
+
+        FilterQuery = get_filter_query(Filters);
+        if (MyCustomQueryOR.length > 0) {
             var tmpFilterQuery = get_filter_query(Filters);
             delete tmpFilterQuery['type_code'];
-            customCondition = { "$and": [tmpFilterQuery, { "$or": MyCustomQuery }] };
+            customCondition = { "$and": [tmpFilterQuery, { "$or": MyCustomQueryOR }] };
             FilterQuery = { "$or": [FilterQuery, customCondition] };
         }
+        if (MyCustomQueryAND.length > 0) {
+            var query = MyCustomQueryAND.slice();
+            query.push(FilterQuery);
+            // Wrap the query with an $and operator
+            FilterQuery = { "$and": query };
 
+        }
+
+
+        console.log("Updated FilterQuery:", JSON.stringify(FilterQuery));
         refresh_collection();
     }
 
-    function renderAndBindButton(name, value) {
-        const container = $('#my_code');
 
-        if (container.length === 0) {
-            console.error(`[Inject JS] Target container #my_code not found.`);
+
+    window.addEventListener("message", function (event) {
+        if (event.source !== window || event.data.type !== "NRDB_CUSTOM_FILTER_READY") {
             return;
         }
 
-        // 1. NEW 按鈕的 HTML
-        const newButtonHTML = `
+        const name = event.data.name;
+        const value = event.data.value;
+        const value2 = event.data.value2;
+        if (value2 == 'and') {
+            const container = $('#my_code_and');
+
+            if (container.length === 0) {
+                console.error(`[Inject JS] Target container #my_code_and not found.`);
+                return;
+            }
+
+            // 1. NEW 按鈕的 HTML
+            const newButtonHTML = `
             <label class="btn btn-default btn-sm"
                     data-code="${name}"
                     title="${name}"
@@ -704,26 +791,41 @@
             </label>
         `;
 
-        // 2. 填充按鈕 HTML
-        container.append(newButtonHTML);
-        const newButtonLabel = container.find('label:last');
-        // 3. 初始化 Bootstrap 按鈕
-        //container.button();
-        newButtonLabel.tooltip({ container: 'body' });
-        console.log('[NRDB強化-Inject-ID] 新增按鈕。', name);
+            // 2. 填充按鈕 HTML
+            container.append(newButtonHTML);
+            const newButtonLabel = container.find('label:last');
+            // 3. 初始化 Bootstrap 按鈕
+            //container.button();
+            newButtonLabel.tooltip({ container: 'body' });
+            console.log('[NRDB強化-Inject-ID] 新增AND按鈕。', name);
+        } else {
+            const container = $('#my_code_or');
 
+            if (container.length === 0) {
+                console.error(`[Inject JS] Target container #my_code_or not found.`);
+                return;
+            }
 
-    }
+            // 1. NEW 按鈕的 HTML
+            const newButtonHTML = `
+            <label class="btn btn-default btn-sm"
+                    data-code="${name}"
+                    title="${name}"
+                    data-original-title="${name}">
+                <input type="checkbox" name="${value}">
+                ${name}
+            </label>
+        `;
 
-    window.addEventListener("message", function (event) {
-        if (event.source !== window || event.data.type !== "NRDB_CUSTOM_FILTER_READY") {
-            return;
+            // 2. 填充按鈕 HTML
+            container.append(newButtonHTML);
+            const newButtonLabel = container.find('label:last');
+            // 3. 初始化 Bootstrap 按鈕
+            //container.button();
+            newButtonLabel.tooltip({ container: 'body' });
+            console.log('[NRDB強化-Inject-ID] 新增OR按鈕。', name);
         }
 
-        const showname = event.data.name;
-        const value = event.data.value;
-
-        renderAndBindButton(showname, value);
 
     }, false);
 
