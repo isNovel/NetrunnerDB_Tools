@@ -1,160 +1,399 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="lib/bootstrap.min.css">
     <style>
-        body {
-            width: 350px;
-            background-color: #f8f9fa;
-            font-family: "Segoe UI", sans-serif;
+        * {
+            box-sizing: border-box;
             margin: 0;
-            padding: 15px;
+            padding: 0;
         }
 
-        h3 {
-            font-size: 1.2rem;
-            text-align: center;
-            margin-bottom: 15px;
+        body {
+            width: 380px;
+            background: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             color: #333;
+            font-size: 13px;
         }
 
-        /* 收合標題樣式 */
-        .section-header {
-            cursor: pointer;
-            background: #e9ecef;
-            padding: 10px 15px;
-            border-radius: 6px;
-            margin-top: 10px;
+        /* 頂部 */
+        .header {
+            padding: 16px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .header h4 {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 600;
+            color: #212529;
+        }
+
+        /* 主選單 */
+        .menu-section {
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .menu-item {
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .menu-title {
+            padding: 14px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            cursor: pointer;
             user-select: none;
-            border: 1px solid #dee2e6;
-            transition: background 0.2s;
-        }
-
-        .section-header:hover {
-            background: #dee2e6;
-        }
-
-        .section-header strong {
-            color: #495057;
-        }
-
-        /* 箭頭旋轉 */
-        .arrow {
-            transition: transform 0.3s ease;
-            color: #6c757d;
-        }
-
-        .section-header.collapsed .arrow {
-            transform: rotate(-90deg);
-        }
-
-        /* 收合容器：初始化 max-height 必須為 0 */
-        .collapsible-content {
-            overflow: hidden;
-            transition: max-height 0.3s ease-in-out;
             background: #fff;
-            border-left: 1px solid #dee2e6;
-            border-right: 1px solid #dee2e6;
+            transition: background 0.15s;
         }
 
-        /* 列表樣式 */
+        .menu-title:hover {
+            background: #f8f9fa;
+        }
+
+        .menu-title .label {
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .menu-title .arrow {
+            font-size: 10px;
+            color: #999;
+            transition: transform 0.2s;
+        }
+
+        .menu-item.open .menu-title .arrow {
+            transform: rotate(180deg);
+        }
+
+        /* 內容區 */
+        .menu-content {
+            display: none;
+            background: #fafafa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .menu-item.open .menu-content {
+            display: block;
+        }
+
+        /* 子選單 */
+        .submenu {
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .submenu:last-child {
+            border-bottom: none;
+        }
+
+        .submenu-title {
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-size: 13px;
+            background: #fff;
+            transition: background 0.15s;
+        }
+
+        .submenu-title:hover {
+            background: #f0f0f0;
+        }
+
+        .submenu-title .label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .submenu-title .tag {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .tag-runner {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .tag-corp {
+            background: #fce4ec;
+            color: #c2185b;
+        }
+
+        .submenu-title .arrow {
+            font-size: 10px;
+            color: #999;
+            transition: transform 0.2s;
+        }
+
+        .submenu.open .submenu-title .arrow {
+            transform: rotate(180deg);
+        }
+
+        .submenu-content {
+            display: none;
+            padding: 10px 16px;
+            background: #fafafa;
+        }
+
+        .submenu.open .submenu-content {
+            display: block;
+        }
+
+        /* 列表 */
         .column-list {
             list-style: none;
-            padding: 10px;
             margin: 0;
         }
 
         .column-list li {
-            background: #fff;
-            border: 1px solid #eee;
-            border-radius: 4px;
-            margin-bottom: 6px;
-            padding: 8px;
             display: flex;
             align-items: center;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            cursor: move;
         }
 
-        .column-list li.dragging {
-            opacity: 0.4;
-            border: 2px dashed #007bff;
+        .column-list li:last-child {
+            border-bottom: none;
         }
 
-        .handle {
-            cursor: grab;
+        .column-list li .handle {
+            color: #ccc;
             margin-right: 10px;
-            color: #adb5bd;
+            font-size: 12px;
         }
 
-        .visibility-toggle {
+        .column-list li input[type="checkbox"] {
             margin-right: 10px;
-            width: 16px;
-            height: 16px;
             cursor: pointer;
         }
 
-        .item-label {
-            flex-grow: 1;
+        .column-list li span {
+            font-size: 13px;
+        }
+
+        .column-list li.hidden-item {
+            opacity: 0.4;
+        }
+
+        .column-list li.hidden-item span {
+            text-decoration: line-through;
+        }
+
+        /* 按鈕管理 */
+        .btn-section {
+            margin-bottom: 10px;
+        }
+
+        .section-label {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #999;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+
+        .btn-row input[type="checkbox"] {
+            cursor: pointer;
+        }
+
+        .btn-row input[type="text"] {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .btn-row .del-btn {
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: #fee;
+            color: #e74c3c;
+            border-radius: 4px;
+            cursor: pointer;
             font-size: 14px;
+            line-height: 1;
+            padding: 0;
+        }
+
+        .btn-row .del-btn:hover {
+            background: #fdd;
+        }
+
+        .add-btn {
+            width: 100%;
+            padding: 8px;
+            border: 1px dashed #ddd;
+            background: #fff;
+            color: #666;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.15s;
+        }
+
+        .add-btn:hover {
+            border-color: #999;
             color: #333;
         }
 
-        .hidden-item {
-            opacity: 0.5;
-            background: #f8f9fa !important;
+        /* 底部 */
+        .footer {
+            padding: 16px;
         }
 
-        .hidden-item .item-label {
-            text-decoration: line-through;
-            color: #adb5bd;
-        }
-
-        .btn-group-xs>.btn {
-            padding: 1px 5px;
-            font-size: 11px;
-        }
-
-        .save-section {
-            margin-top: 20px;
-            padding-bottom: 10px;
-        }
-
-        #save-btn {
-            font-weight: bold;
+        .save-btn {
             width: 100%;
+            padding: 12px;
+            background: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .save-btn:hover {
+            background: #0056b3;
+        }
+
+        .save-btn:active {
+            background: #004494;
+        }
+
+        input[type="text"] {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        input[type="text"].name-input {
+            width: 70px;
+        }
+
+        input[type="text"]::placeholder {
+            color: #bbb;
         }
     </style>
 </head>
-
 <body>
-    <h3>欄位顯示與排序</h3>
-
-    <div class="section-header collapsed" id="runner-header">
-        <strong>Runner 側欄位</strong>
-        <span class="arrow">▼</span>
-    </div>
-    <div class="collapsible-content" style="max-height: 0;">
-        <ul id="runner-list" class="column-list"></ul>
+    <div class="header">
+        <h4>NetrunnerDB 工具箱</h4>
     </div>
 
-    <div class="section-header collapsed" id="corp-header">
-        <strong>Corp 側欄位</strong>
-        <span class="arrow">▼</span>
-    </div>
-    <div class="collapsible-content" style="max-height: 0;">
-        <ul id="corp-list" class="column-list"></ul>
+    <div class="content">
+        <!-- 欄位顯示 -->
+        <div class="menu-section">
+            <div class="menu-item" data-menu="column">
+                <div class="menu-title">
+                    <span class="label">📊 欄位顯示與排序</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="menu-content">
+                    <div class="submenu" data-submenu="runner-list">
+                        <div class="submenu-title">
+                            <span class="label"><span class="tag tag-runner">Runner</span> 側欄位</span>
+                            <span class="arrow">▼</span>
+                        </div>
+                        <div class="submenu-content">
+                            <ul id="runner-list" class="column-list"></ul>
+                        </div>
+                    </div>
+                    <div class="submenu" data-submenu="corp-list">
+                        <div class="submenu-title">
+                            <span class="label"><span class="tag tag-corp">Corp</span> 側欄位</span>
+                            <span class="arrow">▼</span>
+                        </div>
+                        <div class="submenu-content">
+                            <ul id="corp-list" class="column-list"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 自定義按鈕 -->
+            <div class="menu-item" data-menu="button">
+                <div class="menu-title">
+                    <span class="label">🔘 自定義按鈕管理</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="menu-content">
+                    <div class="submenu" data-submenu="runner-btn">
+                        <div class="submenu-title">
+                            <span class="label"><span class="tag tag-runner">Runner</span> 按鈕設定</span>
+                            <span class="arrow">▼</span>
+                        </div>
+                        <div class="submenu-content">
+                            <div class="btn-section">
+                                <div class="section-label">AND 區</div>
+                                <div id="runner-and-btns"></div>
+                                <button class="add-btn" data-type="runnerAND">+ 新增按鈕</button>
+                            </div>
+                            <div class="btn-section">
+                                <div class="section-label">OR 區</div>
+                                <div id="runner-or-btns"></div>
+                                <button class="add-btn" data-type="runnerOR">+ 新增按鈕</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="submenu" data-submenu="corp-btn">
+                        <div class="submenu-title">
+                            <span class="label"><span class="tag tag-corp">Corp</span> 按鈕設定</span>
+                            <span class="arrow">▼</span>
+                        </div>
+                        <div class="submenu-content">
+                            <div class="btn-section">
+                                <div class="section-label">AND 區</div>
+                                <div id="corp-and-btns"></div>
+                                <button class="add-btn" data-type="corpAND">+ 新增按鈕</button>
+                            </div>
+                            <div class="btn-section">
+                                <div class="section-label">OR 區</div>
+                                <div id="corp-or-btns"></div>
+                                <button class="add-btn" data-type="corpOR">+ 新增按鈕</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="save-section">
-        <button id="save-btn" class="btn btn-primary">儲存設定並刷新頁面</button>
+    <div class="footer">
+        <button id="save-btn" class="save-btn">套用並刷新頁面</button>
     </div>
 
     <script src="popup.js"></script>
 </body>
-
 </html>

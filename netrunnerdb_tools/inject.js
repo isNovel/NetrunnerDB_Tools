@@ -765,68 +765,47 @@
 
 
     window.addEventListener("message", function (event) {
-        if (event.source !== window || event.data.type !== "NRDB_CUSTOM_FILTER_READY") {
+        if (event.source !== window || event.data.type !== "NRDB_CUSTOM_FILTER") {
             return;
         }
 
-        const name = event.data.name;
-        const value = event.data.value;
-        const value2 = event.data.value2;
-        if (value2 == 'and') {
-            const container = $('#my_code_and');
-
-            if (container.length === 0) {
-                console.error(`[Inject JS] Target container #my_code_and not found.`);
-                return;
-            }
-
-            // 1. NEW 按鈕的 HTML
-            const newButtonHTML = `
-            <label class="btn btn-default btn-sm"
-                    data-code="${name}"
-                    title="${name}"
-                    data-original-title="${name}">
-                <input type="checkbox" name="${value}">
-                ${name}
-            </label>
-        `;
-
-            // 2. 填充按鈕 HTML
-            container.append(newButtonHTML);
-            const newButtonLabel = container.find('label:last');
-            // 3. 初始化 Bootstrap 按鈕
-            //container.button();
-            newButtonLabel.tooltip({ container: 'body' });
-            console.log('[NRDB強化-Inject-ID] 新增AND按鈕。', name);
-        } else {
-            const container = $('#my_code_or');
-
-            if (container.length === 0) {
-                console.error(`[Inject JS] Target container #my_code_or not found.`);
-                return;
-            }
-
-            // 1. NEW 按鈕的 HTML
-            const newButtonHTML = `
-            <label class="btn btn-default btn-sm"
-                    data-code="${name}"
-                    title="${name}"
-                    data-original-title="${name}">
-                <input type="checkbox" name="${value}">
-                ${name}
-            </label>
-        `;
-
-            // 2. 填充按鈕 HTML
-            container.append(newButtonHTML);
-            const newButtonLabel = container.find('label:last');
-            // 3. 初始化 Bootstrap 按鈕
-            //container.button();
-            newButtonLabel.tooltip({ container: 'body' });
-            console.log('[NRDB強化-Inject-ID] 新增OR按鈕。', name);
-        }
 
 
+        const btns = event.data.buttons;
+        if (!btns) return;
+        const sidePrefix = (typeof Identity !== 'undefined' && Identity.side_code === 'runner') ? 'runner' : 'corp';
+        const identityCode = Identity.side_code;
+        function renderArea(containerId, buttonList) {
+            const $container = $(containerId);
+            if ($container.length === 0) return;
+
+            $container.empty(); // 清空舊按鈕，避免重複刷新時堆疊
+
+            buttonList.forEach(btn => {
+                if (!btn.enabled || !btn.name || !btn.value) return;
+
+                const newButtonHTML = `
+                <label class="btn btn-default btn-sm" 
+                       data-code="${btn.value}" 
+                       title="${btn.value}" 
+                     >
+                    <input type="checkbox" name="${btn.value}">
+                    ${btn.name}
+                </label>
+            `;
+
+                $container.append(newButtonHTML);
+                const $newBtn = $container.find('label:last');
+
+                // 初始化 Bootstrap Tooltip
+                if ($.fn.tooltip) {
+                    $newBtn.tooltip({ container: 'body' });
+                }
+            });
+        } renderArea('#my_code_and', btns[sidePrefix + 'AND'] || []);
+        renderArea('#my_code_or', btns[sidePrefix + 'OR'] || []);
+
+        console.log('[NRDB強化-Inject-ID] 新增OR按鈕。', name);
     }, false);
 
     waitForNRDB(() => {

@@ -19,12 +19,16 @@ let columnSettings = {
     corp_faction: true
 };
 const defaultOrder = {
-    runner: ['indeck', 'title', 'cost', 'memory_cost', 'strength', 'faction_cost', 'type_code', 'faction_code'],
-    corp: ['indeck', 'title', 'cost', 'trash_cost', 'faction_cost', 'type_code', 'faction_code']
+    runner: ['indeck', 'title', 'cost', 'memory_cost', 'strength', 'faction_cost', 'type_code', 'faction_code'].map(id => ({ id, visible: true })),
+    corp: ['indeck', 'title', 'cost', 'trash_cost', 'faction_cost', 'type_code', 'faction_code'].map(id => ({ id, visible: true }))
 };
 
-
-// 修正後的 modifycollection 函式，會等待元素出現
+const DEFAULT_BTNS = {
+    runnerAND: [{ name: "Stealth", value: "x:Stealth", enabled: true }, { name: "Run", value: "s:Run", enabled: true }],
+    runnerOR: [{ name: "AI", value: "s:AI", enabled: true }, { name: "Decoder", value: "s:Decoder", enabled: true }, { name: "Killer", value: "s:Killer", enabled: true }, { name: "Fracter", value: "s:Fracter", enabled: true }],
+    corpAND: [{ name: "Liability", value: "s:Liability", enabled: true }, { name: "Black Ops", value: "s:Black Ops", enabled: true }, { name: "Gray Ops", value: "s:Gray Ops", enabled: true }],
+    corpOR: [{ name: "Barrier", value: "s:Barrier", enabled: true }, { name: "Code Gate", value: "s:Code Gate", enabled: true }, { name: "Sentry", value: "s:Sentry", enabled: true }]
+};
 function insertEmptyFilterRow() {
 
     // --- 1. 定義 HTML 結構 ---
@@ -38,18 +42,21 @@ function insertEmptyFilterRow() {
         <div id="type_code" class="filter btn-group btn-group-justified" data-toggle="buttons"></div>
     </div>
 
-    <div class="col-sm-12" style="margin-bottom:10px; display: flex; align-items: center;">
-        <div style="width: 80px; flex-shrink: 0; font-weight: bold; color: #666; font-size: 12px;">
-            自訂 (OR)
-        </div>
-        <div id="my_code_or" class="newfilter btn-group btn-group-justified" data-toggle="buttons" style="flex-grow: 1;"></div>
+    <div class="col-sm-12" id="custom-filter-toggle" style="cursor:pointer; margin-bottom:5px; color:#337ab7; font-size:12px; display:flex; align-items:center;">
+        <span class="caret" style="margin-right:5px; transition: transform 0.2s;" id="custom-filter-caret"></span>
+        <strong>自定義篩選器 (自訂按鈕)</strong>
     </div>
 
-    <div class="col-sm-12" style="margin-bottom:10px; display: flex; align-items: center;">
-        <div style="width: 80px; flex-shrink: 0; font-weight: bold; color: #666; font-size: 12px;">
-            自訂 (AND)
+    <div id="custom-filter-container" style="display: block;">
+        <div class="col-sm-12" style="margin-bottom:10px; display: flex; align-items: center;">
+            <div style="width: 80px; flex-shrink: 0; font-weight: bold; color: #666; font-size: 12px;">自訂 (OR)</div>
+            <div id="my_code_or" class="newfilter btn-group btn-group-justified" data-toggle="buttons" style="flex-grow: 1;"></div>
         </div>
-        <div id="my_code_and" class="newfilter btn-group btn-group-justified" data-toggle="buttons" style="flex-grow: 1;"></div>
+
+        <div class="col-sm-12" style="margin-bottom:10px; display: flex; align-items: center;">
+            <div style="width: 80px; flex-shrink: 0; font-weight: bold; color: #666; font-size: 12px;">自訂 (AND)</div>
+            <div id="my_code_and" class="newfilter btn-group btn-group-justified" data-toggle="buttons" style="flex-grow: 1;"></div>
+        </div>
     </div>
 </div>
     `;
@@ -62,7 +69,29 @@ function insertEmptyFilterRow() {
     // --- 3. 檢查元素並插入新的結構 ---
     if (existingSearchButtonsRow) {
         existingSearchButtonsRow.replaceWith(newRowElement);
-        console.log('✅ 新的篩選器結構已使用原生 JS 成功插入。');
+
+        // 重新抓取插入後的 DOM 元素
+        const toggleBtn = document.getElementById('custom-filter-toggle');
+        const container = document.getElementById('custom-filter-container');
+        const caret = document.getElementById('custom-filter-caret');
+
+        if (toggleBtn && container) {
+            toggleBtn.addEventListener('click', () => {
+                // 使用邏輯：如果不是 none，就把它藏起來
+                if (container.style.display === 'none') {
+                    container.style.display = 'block';
+                    if (caret) caret.style.transform = 'rotate(0deg)';
+                } else {
+                    container.style.display = 'none';
+                    if (caret) caret.style.transform = 'rotate(-90deg)';
+                }
+            });
+
+            // 可選：如果你希望預設是收起來的，可以在這裡先執行一次隱藏
+            // container.style.display = 'none';
+            // if (caret) caret.style.transform = 'rotate(-90deg)';
+        }
+        console.log('✅ 新的篩選器結構已成功插入並綁定事件。');
     } else {
         console.error("無法從臨時容器中提取有效的 Element。請檢查 HTML 結構。");
     }
@@ -197,40 +226,18 @@ window.addEventListener("message", function listener(event) {
         identityType = event.data.id;
         window.sessionIdentityType = identityType; // 保存session級別的identity類型
         console.log('[Content.js] 成功從 inject.js 接收到數據:', identityType);
+        chrome.storage.sync.get(['customButtons', 'columnOrder'], function (result) {
 
-        if (identityType === 'runner') {
-            window.postMessage({
-                type: "NRDB_CUSTOM_FILTER_READY",
-                name: "Decoder",
-                value: "s:Decoder",
-                value2: 'and'
-
-            }, "*");
+            const columnOrder = result.columnOrder || defaultOrder;
+            const customButtons = result.customButtons || DEFAULT_BTNS; // 記得在 content.js 頂部定義 DEFAULT_BTNS
 
             window.postMessage({
-                type: "NRDB_CUSTOM_FILTER_READY",
-                name: "Killer",
-                value: "s:Killer",
-                value2: 'and'
+                type: "NRDB_CUSTOM_FILTER",
+                buttons: customButtons,
+                columns: columnOrder
             }, "*");
+        });
 
-            window.postMessage({
-                type: "NRDB_CUSTOM_FILTER_READY",
-                name: "Fracter",
-                value: "s:Fracter",
-                value2: 'or'
-            }, "*");
-
-            window.postMessage({
-                type: "NRDB_CUSTOM_FILTER_READY",
-                name: "AI",
-                value: "s:AI",
-                value2: 'or'
-
-            }, "*");
-        } else {
-
-        }
 
         // 滿足「一次性」要求，移除這個監聽器
         window.removeEventListener("message", listener, false);
