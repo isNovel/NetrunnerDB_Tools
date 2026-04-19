@@ -1,4 +1,4 @@
-# NetrunnerDB_Chinese_Tools
+# NetrunnerDB_Filter_Tools
 增强 NetrunnerDB 筛选功能，让组牌更轻松。
 Empower your deckbuilding experience with enhanced filtering on NetrunnerDB.
 
