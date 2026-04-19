@@ -1,6 +1,6 @@
 // nrdb_inject_id_only.js - 純粹基於ID的版本
 (function () {
-    console.log('[NRDB強化-Inject-ID] 注入腳本開始執行。');
+    console.log('[NRDB Enhanced Inject-ID] Injection script started.');
 
     // 全局變量存儲用戶設置（支持 Runner/Corp 分別設置）
     let columnOrder = {};
@@ -18,12 +18,12 @@
             typeof window.NRDB.data.cards !== 'undefined') {
 
             nrdbDataReady = true;
-            console.log('[NRDB強化-Inject-ID] 核心資料 (NRDB.data.cards) 已載入。');
+            console.log('[NRDB Enhanced Inject-ID] Core data (NRDB.data.cards) loaded.');
             callback();
         } else if (attempts > 0) {
             setTimeout(() => waitForNRDB(callback, attempts - 1), 100);
         } else {
-            console.error('[NRDB強化-Inject-ID] 錯誤：NRDB 核心資料載入超時！');
+            console.error('[NRDB Enhanced Inject-ID] ERROR: NRDB core data load timeout!');
         }
     }
     function new_update_filtered(forceBuild) {
@@ -805,7 +805,7 @@
         } renderArea('#my_code_and', btns[sidePrefix + 'AND'] || []);
         renderArea('#my_code_or', btns[sidePrefix + 'OR'] || []);
 
-        console.log('[NRDB強化-Inject-ID] 新增OR按鈕。', name);
+        console.log('[NRDB Enhanced Inject-ID] Added OR button.', name);
     }, false);
 
     waitForNRDB(() => {
@@ -819,14 +819,14 @@
 
         if (typeof debounce !== 'undefined') {
             refresh_collection = debounce(new_update_filtered, 250);
-            console.log("重新設定 refresh_collection，已連結到新的 update_filtered 邏輯。");
+            console.log("Reconfigured refresh_collection and linked it to the new update_filtered logic.");
         } else {
-            console.error("找不到 debounce 函式，無法重新設定 refresh_collection。");
+            console.error("Cannot find debounce function, unable to reconfigure refresh_collection.");
         }
         window.update_deck = new_update_deck;
 
 
-        console.log('[NRDB強化-Inject-ID] new_function 已載入。');
+        console.log('[NRDB Enhanced Inject-ID] new function loaded.');
         window.MyCustomQuery = [];
         const identityCode = Identity.side_code;
         window.postMessage({

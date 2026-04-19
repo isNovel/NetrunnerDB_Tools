@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="lib/bootstrap.min.css">
@@ -26,10 +27,26 @@
         }
 
         .header h4 {
-            margin: 0;
+            margin: 0 0 8px;
             font-size: 15px;
             font-weight: 600;
             color: #212529;
+        }
+
+        .language-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #555;
+        }
+
+        #language-select {
+            padding: 4px 6px;
+            font-size: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
 
         /* 主選單 */
@@ -307,9 +324,10 @@
         }
     </style>
 </head>
+
 <body>
     <div class="header">
-        <h4>NetrunnerDB 工具箱</h4>
+        <h4 id="popup-title" data-i18n="title">NetrunnerDB 工具箱</h4>
     </div>
 
     <div class="content">
@@ -317,13 +335,14 @@
         <div class="menu-section">
             <div class="menu-item" data-menu="column">
                 <div class="menu-title">
-                    <span class="label">📊 欄位顯示與排序</span>
+                    <span class="label" data-i18n="columnSection">📊 列显示与排序</span>
                     <span class="arrow">▼</span>
                 </div>
                 <div class="menu-content">
                     <div class="submenu" data-submenu="runner-list">
                         <div class="submenu-title">
-                            <span class="label"><span class="tag tag-runner">Runner</span> 側欄位</span>
+                            <span class="label"><span class="tag tag-runner">Runner</span> <span
+                                    data-i18n="runnerColumns">侧栏</span></span>
                             <span class="arrow">▼</span>
                         </div>
                         <div class="submenu-content">
@@ -332,7 +351,8 @@
                     </div>
                     <div class="submenu" data-submenu="corp-list">
                         <div class="submenu-title">
-                            <span class="label"><span class="tag tag-corp">Corp</span> 側欄位</span>
+                            <span class="label"><span class="tag tag-corp">Corp</span> <span
+                                    data-i18n="corpColumns">侧栏</span></span>
                             <span class="arrow">▼</span>
                         </div>
                         <div class="submenu-content">
@@ -345,43 +365,45 @@
             <!-- 自定義按鈕 -->
             <div class="menu-item" data-menu="button">
                 <div class="menu-title">
-                    <span class="label">🔘 自定義按鈕管理</span>
+                    <span class="label" data-i18n="buttonSection">🔘 自定义按钮管理</span>
                     <span class="arrow">▼</span>
                 </div>
                 <div class="menu-content">
                     <div class="submenu" data-submenu="runner-btn">
                         <div class="submenu-title">
-                            <span class="label"><span class="tag tag-runner">Runner</span> 按鈕設定</span>
+                            <span class="label"><span class="tag tag-runner">Runner</span> <span
+                                    data-i18n="runnerButtonSettings">按钮设置</span></span>
                             <span class="arrow">▼</span>
                         </div>
                         <div class="submenu-content">
                             <div class="btn-section">
-                                <div class="section-label">AND 區</div>
+                                <div class="section-label" data-i18n="andSection">AND 区</div>
                                 <div id="runner-and-btns"></div>
-                                <button class="add-btn" data-type="runnerAND">+ 新增按鈕</button>
+                                <button class="add-btn" data-type="runnerAND" data-i18n="addButton">+ 新增按钮</button>
                             </div>
                             <div class="btn-section">
-                                <div class="section-label">OR 區</div>
+                                <div class="section-label" data-i18n="orSection">OR 区</div>
                                 <div id="runner-or-btns"></div>
-                                <button class="add-btn" data-type="runnerOR">+ 新增按鈕</button>
+                                <button class="add-btn" data-type="runnerOR" data-i18n="addButton">+ 新增按钮</button>
                             </div>
                         </div>
                     </div>
                     <div class="submenu" data-submenu="corp-btn">
                         <div class="submenu-title">
-                            <span class="label"><span class="tag tag-corp">Corp</span> 按鈕設定</span>
+                            <span class="label"><span class="tag tag-corp">Corp</span> <span
+                                    data-i18n="corpButtonSettings">按钮设置</span></span>
                             <span class="arrow">▼</span>
                         </div>
                         <div class="submenu-content">
                             <div class="btn-section">
-                                <div class="section-label">AND 區</div>
+                                <div class="section-label" data-i18n="andSection">AND 区</div>
                                 <div id="corp-and-btns"></div>
-                                <button class="add-btn" data-type="corpAND">+ 新增按鈕</button>
+                                <button class="add-btn" data-type="corpAND" data-i18n="addButton">+ 新增按钮</button>
                             </div>
                             <div class="btn-section">
-                                <div class="section-label">OR 區</div>
+                                <div class="section-label" data-i18n="orSection">OR 区</div>
                                 <div id="corp-or-btns"></div>
-                                <button class="add-btn" data-type="corpOR">+ 新增按鈕</button>
+                                <button class="add-btn" data-type="corpOR" data-i18n="addButton">+ 新增按钮</button>
                             </div>
                         </div>
                     </div>
@@ -391,9 +413,17 @@
     </div>
 
     <div class="footer">
-        <button id="save-btn" class="save-btn">套用並刷新頁面</button>
+        <button id="save-btn" class="save-btn" data-i18n="applyAndRefresh">应用并刷新页面</button>
+        <div class="language-row" style="margin-top:12px; justify-content: space-between;">
+            <label for="language-select" id="language-label" data-i18n="languageLabel">语言</label>
+            <select id="language-select">
+                <option value="zh">简体中文</option>
+                <option value="en">English</option>
+            </select>
+        </div>
     </div>
 
     <script src="popup.js"></script>
 </body>
+
 </html>

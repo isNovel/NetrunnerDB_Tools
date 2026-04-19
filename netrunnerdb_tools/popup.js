@@ -1,8 +1,8 @@
-const LABEL_MAP = {
-    indeck: '數量 (Qty)', title: '名稱 (Title)', cost: '費用 (Cost)',
-    memory_cost: '記憶體 (MU)', trash_cost: '垃圾費 (Trash)',
-    strength: '強度 (Str)', faction_cost: '影響力 (Inf)',
-    type_code: '類型 (Type)', faction_code: '勢力 (Faction)'
+let LABEL_MAP = {
+    indeck: '数量 (Qty)', title: '名称 (Title)', cost: '费用 (Cost)',
+    memory_cost: '记忆 (MU)', trash_cost: '垃圾费 (Trash)',
+    strength: '强度 (Str)', faction_cost: '影响力 (Inf)',
+    type_code: '类型 (Type)', faction_code: '势力 (Faction)'
 };
 
 const DEFAULT_BTNS = {
@@ -16,6 +16,82 @@ const DEFAULT_ORDER = {
     runner: ['indeck', 'title', 'cost', 'memory_cost', 'strength', 'faction_cost', 'type_code', 'faction_code'].map(id => ({ id, visible: true })),
     corp: ['indeck', 'title', 'cost', 'trash_cost', 'faction_cost', 'type_code', 'faction_code'].map(id => ({ id, visible: true }))
 };
+
+const DEFAULT_LANGUAGE = 'zh';
+const LANGUAGES = {
+    zh: {
+        title: 'NetrunnerDB 工具箱',
+        languageLabel: '语言',
+        columnSection: '📊 列显示与排序',
+        runnerColumns: '侧栏',
+        corpColumns: '侧栏',
+        buttonSection: '🔘 自定义按钮管理',
+        runnerButtonSettings: '按钮设置',
+        corpButtonSettings: '按钮设置',
+        andSection: 'AND 区',
+        orSection: 'OR 区',
+        addButton: '+ 新增按钮',
+        applyAndRefresh: '应用并刷新页面',
+        labelMap: {
+            indeck: '数量 (Qty)', title: '名称 (Title)', cost: '费用 (Cost)',
+            memory_cost: '记忆 (MU)', trash_cost: '垃圾费 (Trash)',
+            strength: '强度 (Str)', faction_cost: '影响力 (Inf)',
+            type_code: '类型 (Type)', faction_code: '势力 (Faction)'
+        }
+    },
+    en: {
+        title: 'NetrunnerDB Toolbox',
+        languageLabel: 'Language',
+        columnSection: '📊 Column display and order',
+        runnerColumns: 'Runner columns',
+        corpColumns: 'Corp columns',
+        buttonSection: '🔘 Custom button manager',
+        runnerButtonSettings: 'Runner buttons',
+        corpButtonSettings: 'Corp buttons',
+        andSection: 'AND section',
+        orSection: 'OR section',
+        addButton: '+ Add button',
+        applyAndRefresh: 'Apply and refresh',
+        labelMap: {
+            indeck: 'Quantity (Qty)', title: 'Name (Title)', cost: 'Cost',
+            memory_cost: 'Mem.', trash_cost: 'Trash',
+            strength: 'Str.', faction_cost: 'Inf.',
+            type_code: 'Type', faction_code: 'Faction'
+        }
+    }
+};
+
+function applyLanguage(lang) {
+    if (!LANGUAGES[lang]) lang = DEFAULT_LANGUAGE;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (LANGUAGES[lang][key] !== undefined) {
+            el.textContent = LANGUAGES[lang][key];
+        }
+    });
+    LABEL_MAP = LANGUAGES[lang].labelMap || LABEL_MAP;
+    updateColumnListLabels();
+    const languageSelect = document.getElementById('language-select');
+    if (languageSelect) {
+        languageSelect.value = lang;
+    }
+}
+
+function saveLanguage(lang) {
+    chrome.storage.sync.set({ language: lang }, () => {
+        console.log('Saved language preference:', lang);
+    });
+}
+
+function updateColumnListLabels() {
+    document.querySelectorAll('.column-list li').forEach(li => {
+        const id = li.dataset.id;
+        const label = li.querySelector('span:not(.handle)');
+        if (label) {
+            label.textContent = LABEL_MAP[id] || id;
+        }
+    });
+}
 
 // --- 自動儲存 ---
 let saveTimeout;
@@ -74,16 +150,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // 從 Storage 載入設定
-    chrome.storage.sync.get(['columnOrder', 'customButtons'], (res) => {
+    chrome.storage.sync.get(['columnOrder', 'customButtons', 'language'], (res) => {
         const order = res.columnOrder || DEFAULT_ORDER;
         renderColumnList('runner-list', order.runner);
         renderColumnList('corp-list', order.corp);
 
         const btns = res.customButtons || DEFAULT_BTNS;
+        const lang = res.language || DEFAULT_LANGUAGE;
+        LABEL_MAP = LANGUAGES[lang].labelMap || LABEL_MAP;
+        applyLanguage(lang);
+        if (!res.language) {
+            saveLanguage(lang);
+        }
 
         if (!res.columnOrder || !res.customButtons) {
             chrome.storage.sync.set({ columnOrder: order, customButtons: btns }, () => {
-                console.log('首次安裝，已寫入預設值');
+                console.log('First install, default settings written');
             });
         }
         renderButtonEditor('runner-and-btns', btns.runnerAND);
@@ -92,6 +174,15 @@ document.addEventListener('DOMContentLoaded', () => {
         renderButtonEditor('corp-or-btns', btns.corpOR);
 
     });
+
+    const languageSelect = document.getElementById('language-select');
+    if (languageSelect) {
+        languageSelect.addEventListener('change', (e) => {
+            const lang = e.target.value || DEFAULT_LANGUAGE;
+            applyLanguage(lang);
+            saveLanguage(lang);
+        });
+    }
 
     // 新增按鈕
     document.querySelectorAll('.add-btn').forEach(btn => {
